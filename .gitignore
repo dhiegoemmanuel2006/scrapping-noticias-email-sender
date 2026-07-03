@@ -1,0 +1,22 @@
+# Secrets
+.env
+
+# Virtual Environment
+.venv/
+
+# Python Cache & Compiled Files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Project Generated Files (News data & HTML templates)
+news/noticias.json
+news/template_email.html
