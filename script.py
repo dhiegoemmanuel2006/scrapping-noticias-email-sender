@@ -24,8 +24,9 @@ import sys
 import json
 from dotenv import load_dotenv
 
-from scrapping.scrapping_g1 import make_request_g1, scrapping_news_g1, append_in_json_file
+from scrapping.scrapping_g1 import make_request_g1, scrapping_news_g1
 from scrapping.scrapping_midia_ninja import make_request_midia_ninja, scrapping_news_midia_ninja
+from scrapping.utils import append_in_json_file
 from model.email_classify_agent import ler_noticias_json, gerar_html_noticias
 from email_sender.email import email_server, send_email_template
 
