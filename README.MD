@@ -24,7 +24,8 @@ script-noticias-scrapping/
 ├── script.py                          # Main orchestrator – runs the full pipeline
 ├── scrapping/
 │   ├── scrapping_g1.py                # G1 portal scraper
-│   └── scrapping_midia_ninja.py       # Mídia Ninja portal scraper
+│   ├── scrapping_midia_ninja.py       # Mídia Ninja portal scraper
+│   └── utils.py                       # Shared utility functions (requests and JSON)
 ├── model/
 │   ├── email_classify_agent.py        # LangChain agent (Gemini 2.5 Flash)
 │   └── PROMPT.MD                      # AI prompt template (editable)
@@ -145,7 +146,8 @@ script-noticias-scrapping/
 ├── script.py                          # Orquestrador principal – executa todo o pipeline
 ├── scrapping/
 │   ├── scrapping_g1.py                # Raspador do portal G1
-│   └── scrapping_midia_ninja.py       # Raspador do portal Mídia Ninja
+│   ├── scrapping_midia_ninja.py       # Raspador do portal Mídia Ninja
+│   └── utils.py                       # Funções utilitárias compartilhadas (requisição e JSON)
 ├── model/
 │   ├── email_classify_agent.py        # Agente LangChain (Gemini 2.5 Flash)
 │   └── PROMPT.MD                      # Template de prompt da IA (editável)
