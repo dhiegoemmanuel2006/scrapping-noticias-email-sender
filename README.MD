@@ -13,9 +13,8 @@ An automated pipeline that scrapes news from Brazilian portals, filters them wit
 | Step | Description |
 |------|-------------|
 | **1. Web Scraping** | Collects headlines and links from **G1** and **Mídia Ninja** |
-| **2. AI Curation** | Gemini 2.5 Flash classifies and filters news by relevance (Politics, World Cup, Culture) |
-| **3. HTML Generation** | Generates a clean, responsive email template with inline CSS |
-| **4. Email Delivery** | Sends the newsletter via Gmail using `yagmail` |
+| **2. AI Orchestration** | **LangGraph** orchestrates two Gemini 2.5 Flash agents: a **Classifier** (filters by relevance) and a **Designer** (generates high-quality HTML) |
+| **3. Email Delivery** | Sends the curated newsletter via Gmail using `yagmail` |
 
 ### 📁 Project Structure
 
@@ -24,11 +23,15 @@ script-noticias-scrapping/
 ├── script.py                          # Main orchestrator – runs the full pipeline
 ├── scrapping/
 │   ├── scrapping_g1.py                # G1 portal scraper
-│   ├── scrapping_midia_ninja.py       # Mídia Ninja portal scraper
-│   └── utils.py                       # Shared utility functions (requests and JSON)
-├── model/
-│   ├── email_classify_agent.py        # LangChain agent (Gemini 2.5 Flash)
-│   └── PROMPT.MD                      # AI prompt template (editable)
+│   └── scrapping_midia_ninja.py       # Mídia Ninja portal scraper
+├── langgraph/                         # LangGraph multi-agent orchestration
+│   ├── orquestre.py                   # LangGraph workflow setup
+│   ├── classify_new_agent.py          # Agent: Classifies relevant news
+│   ├── email_designer.py              # Agent: Generates email HTML
+│   └── state.py                       # Shared state schema
+├── utils/
+│   ├── http_utils.py                  # HTTP requests handler
+│   └── json_utils.py                  # JSON manipulation handler
 ├── email_sender/
 │   └── email.py                       # Email server setup and dispatch
 ├── news/
@@ -79,31 +82,30 @@ uv run script.py
 
 **Pipeline output:**
 ```
-Passo 1: Iniciando a raspagem de notícias...
-Buscando notícias no G1...
-Notícias do G1 salvas com sucesso.
-Buscando notícias na Mídia Ninja...
-Notícias da Mídia Ninja salvas com sucesso.
-
-Passo 2: Processando notícias com IA (prompt lido de PROMPT.MD)...
-HTML gerado com sucesso em: .../news/template_email.html
-
-Passo 3: Enviando e-mail de notícias...
-Email enviado com sucesso
-
-Passo 4: Fechando conexão com o servidor de e-mail...
-Pipeline de integração concluído com sucesso!
+2026-07-04 19:21:15,573 - INFO - Passo 1: Iniciando a raspagem de notícias...
+2026-07-04 19:21:15,574 - INFO - Buscando notícias no G1...
+2026-07-04 19:21:15,995 - INFO - Notícias do G1 salvas com sucesso.
+2026-07-04 19:21:15,995 - INFO - Buscando notícias na Mídia Ninja...
+2026-07-04 19:21:17,694 - INFO - Notícias da Mídia Ninja salvas com sucesso.
+2026-07-04 19:21:17,695 - INFO - Passo 2: Processando notícias com IA usando LangGraph...
+2026-07-04 19:21:17,696 - INFO - Executando workflow (isso pode levar alguns segundos)...
+2026-07-04 19:21:59,424 - INFO - Notícias classificadas com sucesso
+2026-07-04 19:22:04,759 - INFO - Html gerado com sucesso
+2026-07-04 19:22:04,761 - INFO - HTML gerado com sucesso em: ...\news\template_email.html
+2026-07-04 19:22:04,761 - INFO - Passo 3: Enviando e-mail de notícias...
+2026-07-04 19:22:07,427 - INFO - Email enviado com sucesso
+2026-07-04 19:22:07,428 - INFO - Passo 4: Fechando conexão com o servidor de e-mail...
+2026-07-04 19:22:07,609 - INFO - Pipeline de integração concluído com sucesso!
 ```
 
-### 🤖 Customizing the AI Prompt
+### 🤖 Customizing the AI Prompts
 
-The AI behavior is fully controlled by the file [`model/PROMPT.MD`](model/PROMPT.MD). You can edit it to:
+The AI behavior is orchestrated via LangGraph and controlled by two main agents:
 
-- Change which **topics** are considered relevant
-- Modify the **HTML structure** of the generated email
-- Adjust the **email title** or layout rules
+- **[`langgraph/classify_new_agent.py`](langgraph/classify_new_agent.py)**: Edit the prompt here to change which **topics** are considered relevant and how they are structured.
+- **[`langgraph/email_designer.py`](langgraph/email_designer.py)**: Edit the prompt here to modify the **HTML structure**, layout rules, and visual style of the generated email.
 
-No code changes needed — just edit the markdown file and re-run the script.
+No main code changes needed — just edit the prompts in these agents and re-run the script.
 
 ### 📦 Dependencies
 
@@ -111,7 +113,7 @@ No code changes needed — just edit the markdown file and re-run the script.
 |---------|---------|
 | `beautifulsoup4` | HTML parsing for web scraping |
 | `requests` | HTTP requests to news portals |
-| `langchain` | LLM orchestration framework |
+| `langgraph` | Multi-agent orchestration framework |
 | `langchain-google-genai` | Google Gemini integration |
 | `python-dotenv` | Environment variable loading |
 | `yagmail` | Gmail email sending |
@@ -135,9 +137,8 @@ Um pipeline automatizado que faz raspagem de notícias de portais brasileiros, f
 | Etapa | Descrição |
 |-------|-----------|
 | **1. Web Scraping** | Coleta manchetes e links do **G1** e **Mídia Ninja** |
-| **2. Curadoria com IA** | Gemini 2.5 Flash classifica e filtra notícias por relevância (Política, Copa do Mundo, Cultura) |
-| **3. Geração de HTML** | Gera um template de e-mail limpo e responsivo com CSS inline |
-| **4. Envio de E-mail** | Envia a newsletter via Gmail usando `yagmail` |
+| **2. Orquestração com IA** | **LangGraph** orquestra dois agentes (Gemini 2.5 Flash): um **Classificador** (filtra por relevância) e um **Designer** (gera HTML de alta qualidade) |
+| **3. Envio de E-mail** | Envia a newsletter curada via Gmail usando `yagmail` |
 
 ### 📁 Estrutura do Projeto
 
@@ -146,11 +147,15 @@ script-noticias-scrapping/
 ├── script.py                          # Orquestrador principal – executa todo o pipeline
 ├── scrapping/
 │   ├── scrapping_g1.py                # Raspador do portal G1
-│   ├── scrapping_midia_ninja.py       # Raspador do portal Mídia Ninja
-│   └── utils.py                       # Funções utilitárias compartilhadas (requisição e JSON)
-├── model/
-│   ├── email_classify_agent.py        # Agente LangChain (Gemini 2.5 Flash)
-│   └── PROMPT.MD                      # Template de prompt da IA (editável)
+│   └── scrapping_midia_ninja.py       # Raspador do portal Mídia Ninja
+├── langgraph/                         # Orquestração multi-agente LangGraph
+│   ├── orquestre.py                   # Setup do workflow do LangGraph
+│   ├── classify_new_agent.py          # Agente: Classifica as notícias relevantes
+│   ├── email_designer.py              # Agente: Gera o HTML do e-mail
+│   └── state.py                       # Esquema de estado (State schema)
+├── utils/
+│   ├── http_utils.py                  # Utilitário para requisições HTTP
+│   └── json_utils.py                  # Utilitário para manipulação de JSON
 ├── email_sender/
 │   └── email.py                       # Configuração e envio de e-mail
 ├── news/
@@ -201,31 +206,30 @@ uv run script.py
 
 **Saída do pipeline:**
 ```
-Passo 1: Iniciando a raspagem de notícias...
-Buscando notícias no G1...
-Notícias do G1 salvas com sucesso.
-Buscando notícias na Mídia Ninja...
-Notícias da Mídia Ninja salvas com sucesso.
-
-Passo 2: Processando notícias com IA (prompt lido de PROMPT.MD)...
-HTML gerado com sucesso em: .../news/template_email.html
-
-Passo 3: Enviando e-mail de notícias...
-Email enviado com sucesso
-
-Passo 4: Fechando conexão com o servidor de e-mail...
-Pipeline de integração concluído com sucesso!
+2026-07-04 19:21:15,573 - INFO - Passo 1: Iniciando a raspagem de notícias...
+2026-07-04 19:21:15,574 - INFO - Buscando notícias no G1...
+2026-07-04 19:21:15,995 - INFO - Notícias do G1 salvas com sucesso.
+2026-07-04 19:21:15,995 - INFO - Buscando notícias na Mídia Ninja...
+2026-07-04 19:21:17,694 - INFO - Notícias da Mídia Ninja salvas com sucesso.
+2026-07-04 19:21:17,695 - INFO - Passo 2: Processando notícias com IA usando LangGraph...
+2026-07-04 19:21:17,696 - INFO - Executando workflow (isso pode levar alguns segundos)...
+2026-07-04 19:21:59,424 - INFO - Notícias classificadas com sucesso
+2026-07-04 19:22:04,759 - INFO - Html gerado com sucesso
+2026-07-04 19:22:04,761 - INFO - HTML gerado com sucesso em: ...\news\template_email.html
+2026-07-04 19:22:04,761 - INFO - Passo 3: Enviando e-mail de notícias...
+2026-07-04 19:22:07,427 - INFO - Email enviado com sucesso
+2026-07-04 19:22:07,428 - INFO - Passo 4: Fechando conexão com o servidor de e-mail...
+2026-07-04 19:22:07,609 - INFO - Pipeline de integração concluído com sucesso!
 ```
 
-### 🤖 Personalizando o Prompt da IA
+### 🤖 Personalizando os Prompts da IA
 
-O comportamento da IA é totalmente controlado pelo arquivo [`model/PROMPT.MD`](model/PROMPT.MD). Você pode editá-lo para:
+O comportamento da IA é orquestrado via LangGraph e controlado por dois agentes principais:
 
-- Mudar quais **temas** são considerados relevantes
-- Modificar a **estrutura HTML** do e-mail gerado
-- Ajustar o **título do e-mail** ou regras de layout
+- **[`langgraph/classify_new_agent.py`](langgraph/classify_new_agent.py)**: Edite o prompt aqui para mudar quais **temas** são considerados relevantes.
+- **[`langgraph/email_designer.py`](langgraph/email_designer.py)**: Edite o prompt aqui para modificar a **estrutura HTML**, regras de layout e estilo visual do e-mail gerado.
 
-Nenhuma alteração no código é necessária — basta editar o arquivo markdown e re-executar o script.
+Nenhuma alteração na lógica principal é necessária — basta editar os prompts desses agentes e re-executar o script.
 
 ### 📦 Dependências
 
@@ -233,7 +237,7 @@ Nenhuma alteração no código é necessária — basta editar o arquivo markdow
 |--------|------------|
 | `beautifulsoup4` | Parsing de HTML para web scraping |
 | `requests` | Requisições HTTP para portais de notícias |
-| `langchain` | Framework de orquestração de LLMs |
+| `langgraph` | Framework de orquestração multi-agente |
 | `langchain-google-genai` | Integração com Google Gemini |
 | `python-dotenv` | Carregamento de variáveis de ambiente |
 | `yagmail` | Envio de e-mails via Gmail |
