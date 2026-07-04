@@ -1,5 +1,10 @@
 from bs4 import BeautifulSoup
-from scrapping.utils import make_request, append_in_json_file
+import logging
+from utils.http_utils import make_request
+from utils.json_utils import append_in_json_file
+
+# Configuração básica do logging para quando o script rodar diretamente
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Coleta do HTML
 def make_request_midia_ninja(url):
@@ -8,43 +13,40 @@ def make_request_midia_ninja(url):
 # Mineração dos dados de Noticias
 def scrapping_news_midia_ninja(response):
     soup = BeautifulSoup(response, 'html.parser')
-    posts = soup.select('main .post')
-    if len(posts) > 0:
-        posts = soup.select('.post')
-        post_list = {
-            "Midia" : {
-                "name" : "Midia Ninja",
-                "title" : [],
-                "link" : []
-            }
-        }
-        for post in posts:
-            h2 = post.find('h2')
-            a_tag = post.find_parent('a')
+    posts = soup.select('.post')
     
-            if h2 and a_tag:
-                titulo = h2.text.strip()
-                link = a_tag.get('href')
+    news_list = []
+    for post in posts:
+        h2 = post.find('h2')
+        a_tag = post.find_parent('a')
         
-                post_list["Midia"]["title"].append(titulo)
-                post_list["Midia"]["link"].append(link)
-        
-        if len(post_list["Midia"]["title"]) > 0 and len(post_list["Midia"]["link"]) > 0:
-            return post_list["Midia"]
+        if h2 and a_tag:
+            titulo = h2.text.strip()
+            link = a_tag.get('href')
+            
+            if titulo and link:
+                news_list.append({
+                    "fonte": "Midia Ninja",
+                    "titulo": titulo,
+                    "link": link
+                })
+                
+    if news_list:
+        return news_list
     else:
-        print("Nenhum post encontrado na Mídia Ninja")
+        logging.warning("Nenhum post encontrado na Mídia Ninja")
         return None
 
 if __name__ == '__main__':
     url = "https://midianinja.org/"
     response = make_request_midia_ninja(url)
     if not response:
-        print("Erro ao fazer requisição para Midia Ninja")
+        logging.error("Erro ao fazer requisição para Midia Ninja")
         import sys; sys.exit()
 
     news = scrapping_news_midia_ninja(response)
     if not news:
-        print("Erro ao fazer scrapping para Midia Ninja")
+        logging.error("Erro ao fazer scrapping para Midia Ninja")
         import sys; sys.exit()
 
     append_in_json_file(news)
